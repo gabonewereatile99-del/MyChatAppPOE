@@ -69,7 +69,7 @@ public class Login {
 
     /**
      * Checks are run in order and the first failing rule's message is returned.
-     * Matching the brief's "conditions -> messages" tables.
+     * 
      */
     
     public String registerUser(String username, String password, String cellphone,

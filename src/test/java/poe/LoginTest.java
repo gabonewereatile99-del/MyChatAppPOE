@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * LoginTest.java — matches the "Test: (assertEquals)" and
- * "Test (assertTrue/False)" tables from Part 1 of the brief.
+ * LoginTest.java — "Test: (assertEquals)" and
+ * "Test (assertTrue/False)" tables as per the POE part 1 brief.
  */
 class LoginTest {
 
