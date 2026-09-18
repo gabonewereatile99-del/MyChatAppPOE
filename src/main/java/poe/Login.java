@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * Boolean-returning check method, kept separate so each one can be
  * unit tested individually. registerUser() then runs them in sequence
  * and returns the message for whichever rule fails first, or a success
- * message if all three pass.
+ * message if all three do pass.
  */
 
 public class Login {
