@@ -6,7 +6,7 @@
 -src/main/java/poe/Login.java
 -src/test/java/poe/LoginTest.java
 
-Message.java, MessageTest.java, and QuickChatApp.java exist in this repo as in-progress work for Part 2 and Part 3.
+The file also includes Message.java, MessageTest.java, and QuickChatApp.java that exist in this repository but are still to be finished for Part 2 and Part 3.
 
 ### Project Description
 MyChatAppPOE is a console-based chat application built in three stages for the PROG5121 Portfolio of Evidence:
