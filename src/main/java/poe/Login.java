@@ -29,6 +29,8 @@ public class Login {
     /**
      * Username must contain an underscore and be no more than five
      * characters long in total.
+     */
+    
     public Boolean checkUserName(String username) {
         return username != null
                 && username.contains("_")
@@ -145,4 +147,5 @@ public class Login {
     public boolean isRegistered() {
         return registered;
     }
+
 }
