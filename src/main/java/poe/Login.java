@@ -28,10 +28,8 @@ public class Login {
 
     /**
      * Username must contain an underscore and be no more than five
-     * characters long in total (e.g. "ky
-     * l_1" -> valid, "kyle!!!!!!" -> invalid).
-     */
-    public boolean checkUserName(String username) {
+     * characters long in total.
+    public Boolean checkUserName(String username) {
         return username != null
                 && username.contains("_")
                 && username.length() <= 5;
@@ -108,7 +106,7 @@ public class Login {
 
     /**
      * Verifies that the supplied credentials match the account created
-     * during registerUser().
+     * during registerUser.
      */
     
     public boolean loginUser(String username, String password) {
