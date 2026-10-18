@@ -2,14 +2,19 @@ package poe;
 
 import java.util.Scanner;
 
+/**
+ * QuickChatApp.java - console entry point for QuickChat.
+ *
+ * The user registers and logs in first. Only after a successful
+ * login do they see the welcome message and the numeric menu, which keeps
+ * running until the user chooses to quit.
+ */
 public class QuickChatApp {
 
     private static final Scanner SCANNER = new Scanner(System.in);
     private static final Login LOGIN = new Login();
 
     public static void main(String[] args) {
-        Message.loadStoredMessagesFromJson();
-
         registerFlow();
         if (!loginFlow()) {
             System.out.println("Too many failed login attempts. Exiting.");
@@ -17,41 +22,39 @@ public class QuickChatApp {
         }
 
         System.out.println("Welcome to QuickChat.");
-        int numMessages = askForMessageLimit();
-        int messagesEnteredThisSession = 0;
+        int messageLimit = askForMessageLimit();
+        boolean messagesEntered = false;
 
         boolean running = true;
         while (running) {
             printMenu();
             int option = readInt();
+
             switch (option) {
                 case 1:
-                    if (messagesEnteredThisSession >= numMessages) {
-                        System.out.println("You have reached your message limit for this session.");
-                        break;
+                    if (messagesEntered) {
+                        System.out.println("You have already entered your " + messageLimit
+                                + " message(s) for this session.");
+                    } else {
+                        enterMessages(messageLimit);
+                        messagesEntered = true;
                     }
-                    sendMessageFlow();
-                    messagesEnteredThisSession++;
                     break;
                 case 2:
                     System.out.println("Coming Soon.");
                     break;
                 case 3:
-                    storedMessagesFlow();
-                    break;
-                case 4:
                     running = false;
-                    System.out.println("Total messages sent: " + Message.returnTotalMessages());
                     System.out.println("Goodbye!");
                     break;
                 default:
-                    System.out.println("Invalid option.");
+                    System.out.println("Invalid option. Please choose 1, 2 or 3.");
             }
         }
     }
 
- 
-    // Part 1 flows
+
+    // Registration and login
 
     private static void registerFlow() {
         System.out.println("=== Register ===");
@@ -66,8 +69,7 @@ public class QuickChatApp {
         System.out.print("Cell phone number (e.g. +27821234567): ");
         String cell = SCANNER.nextLine();
 
-        String result = LOGIN.registerUser(username, password, cell, firstName, lastName);
-        System.out.println(result);
+        System.out.println(LOGIN.registerUser(username, password, cell, firstName, lastName));
     }
 
     private static boolean loginFlow() {
@@ -87,67 +89,72 @@ public class QuickChatApp {
         return false;
     }
 
-    // Part 2 flow
-
+    // Menu and messages
 
     private static int askForMessageLimit() {
-        System.out.print("How many messages would you like to enter this session? ");
+        System.out.print("How many messages do you want to enter? ");
         return readInt();
     }
 
     private static void printMenu() {
-        System.out.println("\n1) Send Messages\n2) Show recently sent messages\n3) Stored Messages\n4) Quit");
+        System.out.println("\n1) Send Messages");
+        System.out.println("2) Show recently sent messages");
+        System.out.println("3) Quit");
         System.out.print("Choose an option: ");
     }
 
-    private static void sendMessageFlow() {
-        System.out.print("Recipient (e.g. +27821234567): ");
-        String recipient = SCANNER.nextLine();
-        System.out.print("Message: ");
-        String text = SCANNER.nextLine();
+    /** Lets the user enter exactly messageLimit messages, one loop pass per message. */
+    private static void enterMessages(int messageLimit) {
+        for (int messageNumber = 0; messageNumber < messageLimit; messageNumber++) {
+            System.out.println("\n--- Message " + (messageNumber + 1) + " of " + messageLimit + " ---");
 
-        Message message = new Message(recipient, text);
+            Message message = readValidMessage(messageNumber);
+            System.out.println(message.getMessageIDStatus());
 
-        String cellCheck = message.checkRecipientCell();
-        System.out.println(cellCheck);
-        if (!cellCheck.startsWith("Cell phone number successfully")) {
-            return;
+            int choice = readSendChoice();
+            System.out.println(message.sentMessage(choice));
+
+            if (choice == 1) {
+                System.out.println(message.getDetails());
+            } else if (choice == 2) {
+                String answer = SCANNER.nextLine().trim();
+                System.out.println(answer.equals("0") ? "Message deleted." : "Message disregarded.");
+            }
         }
 
-        System.out.println("1) Send Message  2) Disregard Message  3) Store Message to send later");
-        int choice = readInt();
-        System.out.println(message.sentMessage(choice));
+        System.out.println("\nTotal messages sent: " + Message.returnTotalMessages());
     }
 
-    // Part 3 flow
+    /** Keeps asking for the recipient and message until both are valid. */
+    private static Message readValidMessage(int messageNumber) {
+        while (true) {
+            System.out.print("Recipient (e.g. +27821234567): ");
+            String recipient = SCANNER.nextLine().trim();
+            System.out.print("Message (max 250 characters): ");
+            String text = SCANNER.nextLine();
 
-    private static void storedMessagesFlow() {
-        System.out.println("\na) Senders/recipients  b) Longest message  c) Search by ID  "
-                + "d) Search by recipient  e) Delete by hash  f) Full report");
-        System.out.print("Choose an option: ");
-        String choice = SCANNER.nextLine();
+            Message message = new Message(messageNumber, recipient, text);
+            System.out.println(message.checkRecipientCell());
+            System.out.println(message.checkMessageLength());
 
-        switch (choice) {
-            case "a" -> System.out.println(Message.displayStoredSendersAndRecipients());
-            case "b" -> System.out.println(Message.displayLongestStoredMessage());
-            case "c" -> {
-                System.out.print("Message ID: ");
-                System.out.println(Message.searchByMessageID(SCANNER.nextLine()));
+            if (message.isRecipientValid() && message.isMessageLengthValid()) {
+                return message;
             }
-            case "d" -> {
-                System.out.print("Recipient number: ");
-                System.out.println(Message.searchByRecipient(SCANNER.nextLine()));
-            }
-            case "e" -> {
-                System.out.print("Message hash: ");
-                System.out.println(Message.deleteByHash(SCANNER.nextLine()));
-            }
-            case "f" -> System.out.println(Message.displayReport());
-            default -> System.out.println("Invalid option.");
+            System.out.println("Please try again.");
         }
     }
 
-    // Helpers
+    private static int readSendChoice() {
+        while (true) {
+            System.out.println("1) Send Message  2) Disregard Message  3) Store Message to send later");
+            System.out.print("Choose an option: ");
+            int choice = readInt();
+            if (choice >= 1 && choice <= 3) {
+                return choice;
+            }
+            System.out.println("Invalid option selected.");
+        }
+    }
 
     private static int readInt() {
         while (true) {
